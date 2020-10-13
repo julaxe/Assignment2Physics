@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "imgui_sdl.h"
 #include "Renderer.h"
+#include "Util.h"
 
 PlayScene::PlayScene()
 {
@@ -17,13 +18,22 @@ PlayScene::~PlayScene()
 
 void PlayScene::draw()
 {
-	if(EventManager::Instance().isIMGUIActive())
+	TextureManager::Instance()->draw("background", 0.0f, 0.0f);
+	
+
+	drawDisplayList();
+	if (EventManager::Instance().isIMGUIActive())
 	{
 		GUI_Function();
 	}
-
-	drawDisplayList();
+	
+	//reset render color back to white
 	SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
+
+	//draw ramp
+	Util::DrawLine(ramp->Pos[0], ramp->Pos[1], { 0,0,0,1 });
+	Util::DrawLine(ramp->Pos[1], ramp->Pos[2], { 0,0,0,1 });
+	Util::DrawLine(ramp->Pos[2], ramp->Pos[0], { 0,0,0,1 });
 }
 
 void PlayScene::update()
@@ -116,21 +126,24 @@ void PlayScene::handleEvents()
 
 void PlayScene::start()
 {
+	//background
+	TextureManager::Instance()->load("../Assets/sprites/backgroundA2.png", "background");
+	
 	// Set GUI Title
 	m_guiTitle = "Play Scene";
-	
-	// Plane Sprite
-	m_pPlaneSprite = new Plane();
-	addChild(m_pPlaneSprite);
 
 	// Player Sprite
 	m_pPlayer = new Player();
 	addChild(m_pPlayer);
 	m_playerFacingRight = true;
 
+	//ramp initial data
+	//position, width, height
+	ramp = new Ramp(400,100,100);
+	
 	// Back Button
 	m_pBackButton = new Button("../Assets/textures/backButton.png", "backButton", BACK_BUTTON);
-	m_pBackButton->getTransform()->position = glm::vec2(300.0f, 400.0f);
+	m_pBackButton->getTransform()->position = glm::vec2(300.0f, 525.0f);
 	m_pBackButton->addEventListener(CLICK, [&]()-> void
 	{
 		m_pBackButton->setActive(false);
@@ -150,7 +163,7 @@ void PlayScene::start()
 
 	// Next Button
 	m_pNextButton = new Button("../Assets/textures/nextButton.png", "nextButton", NEXT_BUTTON);
-	m_pNextButton->getTransform()->position = glm::vec2(500.0f, 400.0f);
+	m_pNextButton->getTransform()->position = glm::vec2(500.0f, 525.0f);
 	m_pNextButton->addEventListener(CLICK, [&]()-> void
 	{
 		m_pNextButton->setActive(false);
@@ -171,7 +184,7 @@ void PlayScene::start()
 
 	/* Instructions Label */
 	m_pInstructionsLabel = new Label("Press the backtick (`) character to toggle Debug View", "Consolas");
-	m_pInstructionsLabel->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.5f, 500.0f);
+	m_pInstructionsLabel->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.5f, 585.0f);
 
 	addChild(m_pInstructionsLabel);
 }
@@ -184,23 +197,27 @@ void PlayScene::GUI_Function() const
 	// See examples by uncommenting the following - also look at imgui_demo.cpp in the IMGUI filter
 	//ImGui::ShowDemoWindow();
 	
-	ImGui::Begin("Your Window Title Goes Here", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
+	ImGui::Begin("Physics Simulation Controls", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
 
-	if(ImGui::Button("My Button"))
+	if(ImGui::Button("Throw"))
 	{
-		std::cout << "My Button Pressed" << std::endl;
+		std::cout << "Simulation started - button pressed" << std::endl;
 	}
 
 	ImGui::Separator();
 
-	static float float3[3] = { 0.0f, 1.0f, 1.5f };
-	if(ImGui::SliderFloat3("My Slider", float3, 0.0f, 2.0f))
-	{
-		std::cout << float3[0] << std::endl;
-		std::cout << float3[1] << std::endl;
-		std::cout << float3[2] << std::endl;
-		std::cout << "---------------------------\n";
-	}
+	
+	//ramp position
+	ImGui::SliderInt("Ramp Position", &ramp->position,5,795);
+	ramp->SetPosition(ramp->position);
+	
+	//ramp width
+	ImGui::SliderInt("Ramp Width", &ramp->width, 20, 400);
+	ramp->SetWidth(ramp->width);
+
+	//ramp height
+	ImGui::SliderInt("Ramp Height", &ramp->height, 20, 400);
+	ramp->SetHeight(ramp->height);
 	
 	ImGui::End();
 
