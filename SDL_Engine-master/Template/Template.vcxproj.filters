@@ -257,6 +257,12 @@
     <ClInclude Include="..\include\IMGUI\imstb_truetype.h">
       <Filter>IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Rampsita.h">
+      <Filter>Game Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Square.h">
+      <Filter>Game Objects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md">

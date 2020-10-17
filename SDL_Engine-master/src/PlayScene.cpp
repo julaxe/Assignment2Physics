@@ -6,7 +6,7 @@
 #include "imgui.h"
 #include "imgui_sdl.h"
 #include "Renderer.h"
-#include "Util.h"
+
 
 PlayScene::PlayScene()
 {
@@ -31,9 +31,11 @@ void PlayScene::draw()
 	SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 
 	//draw ramp
-	Util::DrawLine(ramp->Pos[0], ramp->Pos[1], { 0,0,0,1 });
-	Util::DrawLine(ramp->Pos[1], ramp->Pos[2], { 0,0,0,1 });
-	Util::DrawLine(ramp->Pos[2], ramp->Pos[0], { 0,0,0,1 });
+	//SDL_RenderSetScale(Renderer::Instance()->getRenderer(), 3.0f,3.0f);
+	ramp->Draw();
+
+	square->Draw();
+	
 }
 
 void PlayScene::update()
@@ -50,62 +52,7 @@ void PlayScene::handleEvents()
 {
 	EventManager::Instance().update();
 
-	// handle player movement with GameController
-	if (SDL_NumJoysticks() > 0)
-	{
-		if (EventManager::Instance().getGameController(0) != nullptr)
-		{
-			const auto deadZone = 10000;
-			if (EventManager::Instance().getGameController(0)->LEFT_STICK_X > deadZone)
-			{
-				m_pPlayer->setAnimationState(PLAYER_RUN_RIGHT);
-				m_playerFacingRight = true;
-			}
-			else if (EventManager::Instance().getGameController(0)->LEFT_STICK_X < -deadZone)
-			{
-				m_pPlayer->setAnimationState(PLAYER_RUN_LEFT);
-				m_playerFacingRight = false;
-			}
-			else
-			{
-				if (m_playerFacingRight)
-				{
-					m_pPlayer->setAnimationState(PLAYER_IDLE_RIGHT);
-				}
-				else
-				{
-					m_pPlayer->setAnimationState(PLAYER_IDLE_LEFT);
-				}
-			}
-		}
-	}
 
-
-	// handle player movement if no Game Controllers found
-	if (SDL_NumJoysticks() < 1)
-	{
-		if (EventManager::Instance().isKeyDown(SDL_SCANCODE_A))
-		{
-			m_pPlayer->setAnimationState(PLAYER_RUN_LEFT);
-			m_playerFacingRight = false;
-		}
-		else if (EventManager::Instance().isKeyDown(SDL_SCANCODE_D))
-		{
-			m_pPlayer->setAnimationState(PLAYER_RUN_RIGHT);
-			m_playerFacingRight = true;
-		}
-		else
-		{
-			if (m_playerFacingRight)
-			{
-				m_pPlayer->setAnimationState(PLAYER_IDLE_RIGHT);
-			}
-			else
-			{
-				m_pPlayer->setAnimationState(PLAYER_IDLE_LEFT);
-			}
-		}
-	}
 	
 
 	if (EventManager::Instance().isKeyDown(SDL_SCANCODE_ESCAPE))
@@ -132,56 +79,19 @@ void PlayScene::start()
 	// Set GUI Title
 	m_guiTitle = "Play Scene";
 
-	// Player Sprite
-	m_pPlayer = new Player();
-	addChild(m_pPlayer);
-	m_playerFacingRight = true;
+	
 
 	//ramp initial data
 	//position, width, height
 	ramp = new Ramp(400,100,100);
+
+	int sizeSquare = 50;
+	int h = sizeSquare/2 + 1;
+	//int h = sqrt((sizeSquare/2)*(sizeSquare/2) * 2);
+	int nPosX = ramp->getPosition().x + h*cos(ramp->GetAngle()); 
+	int nPosY = ramp->getPosition().y - h*sin(ramp->GetAngle()); 
+	square = new Square(nPosX,nPosY,ramp->GetAngle(),sizeSquare);
 	
-	// Back Button
-	m_pBackButton = new Button("../Assets/textures/backButton.png", "backButton", BACK_BUTTON);
-	m_pBackButton->getTransform()->position = glm::vec2(300.0f, 525.0f);
-	m_pBackButton->addEventListener(CLICK, [&]()-> void
-	{
-		m_pBackButton->setActive(false);
-		TheGame::Instance()->changeSceneState(START_SCENE);
-	});
-
-	m_pBackButton->addEventListener(MOUSE_OVER, [&]()->void
-	{
-		m_pBackButton->setAlpha(128);
-	});
-
-	m_pBackButton->addEventListener(MOUSE_OUT, [&]()->void
-	{
-		m_pBackButton->setAlpha(255);
-	});
-	addChild(m_pBackButton);
-
-	// Next Button
-	m_pNextButton = new Button("../Assets/textures/nextButton.png", "nextButton", NEXT_BUTTON);
-	m_pNextButton->getTransform()->position = glm::vec2(500.0f, 525.0f);
-	m_pNextButton->addEventListener(CLICK, [&]()-> void
-	{
-		m_pNextButton->setActive(false);
-		TheGame::Instance()->changeSceneState(END_SCENE);
-	});
-
-	m_pNextButton->addEventListener(MOUSE_OVER, [&]()->void
-	{
-		m_pNextButton->setAlpha(128);
-	});
-
-	m_pNextButton->addEventListener(MOUSE_OUT, [&]()->void
-	{
-		m_pNextButton->setAlpha(255);
-	});
-
-	addChild(m_pNextButton);
-
 	/* Instructions Label */
 	m_pInstructionsLabel = new Label("Press the backtick (`) character to toggle Debug View", "Consolas");
 	m_pInstructionsLabel->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.5f, 585.0f);
@@ -212,12 +122,19 @@ void PlayScene::GUI_Function() const
 	ramp->SetPosition(ramp->position);
 	
 	//ramp width
-	ImGui::SliderInt("Ramp Width", &ramp->width, 20, 400);
+	ImGui::SliderInt("Ramp Width", &ramp->width, 20, 500);
 	ramp->SetWidth(ramp->width);
 
 	//ramp height
-	ImGui::SliderInt("Ramp Height", &ramp->height, 20, 400);
+	ImGui::SliderInt("Ramp Height", &ramp->height, 20, 300);
 	ramp->SetHeight(ramp->height);
+
+	int sizeSquare = 50;
+	int h = sizeSquare/2 + 1;
+
+	square->SetPositionX(ramp->getPosition().x + h*cos(ramp->GetAngle()));
+	square->SetPositionY(ramp->getPosition().y - h*sin(ramp->GetAngle()));
+	square->SetAngle(ramp->GetAngle());
 	
 	ImGui::End();
 
