@@ -22,13 +22,14 @@ public:
 	virtual void clean() override;
 	virtual void handleEvents() override;
 	virtual void start() override;
-private:
+protected:
 	// IMGUI Function
 	void GUI_Function() const;
 	std::string m_guiTitle;
 	
 	glm::vec2 m_mousePosition;
 
+    bool m_StartSimulation;
 	//ramp data -  clockwise starting with top point (high)
 	Ramp* ramp;
 

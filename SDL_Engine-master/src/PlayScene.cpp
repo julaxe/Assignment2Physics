@@ -31,7 +31,6 @@ void PlayScene::draw()
 	SDL_SetRenderDrawColor(Renderer::Instance()->getRenderer(), 255, 255, 255, 255);
 
 	//draw ramp
-	//SDL_RenderSetScale(Renderer::Instance()->getRenderer(), 3.0f,3.0f);
 	ramp->Draw();
 
 	square->Draw();
@@ -41,6 +40,19 @@ void PlayScene::draw()
 void PlayScene::update()
 {
 	updateDisplayList();
+	
+	int sizeSquare = 50;
+	int h = sizeSquare/2 + 1;
+	if(square->getStartSimulation())
+	{
+		square->Update();
+		if(square->position.x - h*cos(ramp->GetAngle()) > ramp->position + ramp->width 
+			&& square->getState()== StateSquare::FALLING)
+		{
+			square->setState(StateSquare::PLAINING);
+		}
+	}
+	
 }
 
 void PlayScene::clean()
@@ -79,7 +91,8 @@ void PlayScene::start()
 	// Set GUI Title
 	m_guiTitle = "Play Scene";
 
-	
+	//start variables
+	m_StartSimulation = new bool(false);
 
 	//ramp initial data
 	//position, width, height
@@ -90,7 +103,7 @@ void PlayScene::start()
 	//int h = sqrt((sizeSquare/2)*(sizeSquare/2) * 2);
 	int nPosX = ramp->getPosition().x + h*cos(ramp->GetAngle()); 
 	int nPosY = ramp->getPosition().y - h*sin(ramp->GetAngle()); 
-	square = new Square(nPosX,nPosY,ramp->GetAngle(),sizeSquare);
+	square = new Square(glm::vec2(nPosX,nPosY),ramp->GetAngle(),sizeSquare);
 	
 	/* Instructions Label */
 	m_pInstructionsLabel = new Label("Press the backtick (`) character to toggle Debug View", "Consolas");
@@ -109,32 +122,69 @@ void PlayScene::GUI_Function() const
 	
 	ImGui::Begin("Physics Simulation Controls", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
 
-	if(ImGui::Button("Throw"))
+	if(ImGui::Button("Start Simulation"))
 	{
 		std::cout << "Simulation started - button pressed" << std::endl;
+		square->setStartSimulation(true);
+		square->setState(StateSquare::FALLING);
+	}
+
+	if(ImGui::Button("Reset"))
+	{
+		std::cout << "Simulation reseted - button pressed" << std::endl;
+		square->setStartSimulation(false);
+		square->setVelocity(glm::vec2(0,0));
+		square->setState(StateSquare::NONE);
 	}
 
 	ImGui::Separator();
 
+	ImGui::SliderFloat("= Mass", &square->mass, 1.f,200.f);
+	ImGui::SliderFloat("= Friction", &square->friction,0.0f,1.0f);
 	
+	ImGui::Separator();
+	
+	ImGui::LabelText("Planning Distance", std::to_string(square->distancePlanning).c_str());
+
+	ImGui::LabelText("Position Box X", std::to_string(square->getPosition().x).c_str());
+	ImGui::LabelText("Position Box Y", std::to_string(square->getPosition().y).c_str());
+	ImGui::LabelText("Velocity Box X", std::to_string(square->velocity.x).c_str());
+	ImGui::LabelText("Velocity Box Y", std::to_string(square->velocity.y).c_str());
+	ImGui::LabelText("Acceleration Box X", std::to_string(square->acceleration.x).c_str());
+	ImGui::LabelText("Acceleration Box Y", std::to_string(square->acceleration.y).c_str());
+	ImGui::LabelText("Force Box X", std::to_string(square->getForce().x).c_str());
+	ImGui::LabelText("Force Box Y", std::to_string(square->getForce().y).c_str());
+	
+	//ImGui::TextUnformatted("%f", ramp->height);
 	//ramp position
-	ImGui::SliderInt("Ramp Position", &ramp->position,5,795);
-	ramp->SetPosition(ramp->position);
+	ImGui::Separator();
+	
+	ImGui::InputInt("Ramp Position", &ramp->position,5,795);
+	
 	
 	//ramp width
-	ImGui::SliderInt("Ramp Width", &ramp->width, 20, 500);
-	ramp->SetWidth(ramp->width);
+	ImGui::InputInt("Ramp Width", &ramp->width, 20, 500);
+	
 
 	//ramp height
-	ImGui::SliderInt("Ramp Height", &ramp->height, 20, 300);
-	ramp->SetHeight(ramp->height);
+	ImGui::InputInt("Ramp Height", &ramp->height, 20, 300);
+	
 
 	int sizeSquare = 50;
 	int h = sizeSquare/2 + 1;
 
-	square->SetPositionX(ramp->getPosition().x + h*cos(ramp->GetAngle()));
-	square->SetPositionY(ramp->getPosition().y - h*sin(ramp->GetAngle()));
-	square->SetAngle(ramp->GetAngle());
+	//Update the position of the square relative to the ramp
+	if(!square->getStartSimulation())
+	{
+		ramp->SetPosition(ramp->position);
+		ramp->SetWidth(ramp->width);
+		ramp->SetHeight(ramp->height);
+		square->SetPosition(glm::vec2(ramp->getPosition().x + h*cos(ramp->GetAngle()),
+			ramp->getPosition().y - h*sin(ramp->GetAngle())));
+		
+		square->SetAngle(ramp->GetAngle());
+	}
+	
 	
 	ImGui::End();
 
