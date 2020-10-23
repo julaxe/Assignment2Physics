@@ -59,7 +59,7 @@ struct Square
 	}
 	void Draw()
 	{
-		Util::DrawLine(Pos[0], Pos[1], { 1,0,0,1 });
+		Util::DrawLine(Pos[0], Pos[1], { 0,0,0,1 });
 		Util::DrawLine(Pos[1], Pos[2], { 0,0,0,1 });
 		Util::DrawLine(Pos[2], Pos[3], { 0,0,0,1 });
 		Util::DrawLine(Pos[3], Pos[0], { 0,0,0,1 });
