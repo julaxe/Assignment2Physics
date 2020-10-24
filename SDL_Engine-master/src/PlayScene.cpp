@@ -122,6 +122,7 @@ void PlayScene::GUI_Function() const
 	
 	ImGui::Begin("Physics Simulation Controls", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar);
 
+	ImGui::Text("1 pixel is 1 meter");
 	if(ImGui::Button("Start Simulation"))
 	{
 		std::cout << "Simulation started - button pressed" << std::endl;
@@ -139,35 +140,35 @@ void PlayScene::GUI_Function() const
 
 	ImGui::Separator();
 
-	ImGui::SliderFloat("= Mass", &square->mass, 1.f,200.f);
+	ImGui::SliderFloat("= Mass (kg)", &square->mass, 1.f,200.f);
 	ImGui::SliderFloat("= Friction", &square->friction,0.0f,1.0f);
 	
 	ImGui::Separator();
 	
-	ImGui::LabelText("Planning Distance", std::to_string(square->distancePlanning).c_str());
+	ImGui::LabelText("Planning Distance (m)", std::to_string(square->distancePlanning).c_str());
 
-	ImGui::LabelText("Position Box X", std::to_string(square->getPosition().x).c_str());
-	ImGui::LabelText("Position Box Y", std::to_string(square->getPosition().y).c_str());
-	ImGui::LabelText("Velocity Box X", std::to_string(square->velocity.x).c_str());
-	ImGui::LabelText("Velocity Box Y", std::to_string(square->velocity.y).c_str());
-	ImGui::LabelText("Acceleration Box X", std::to_string(square->acceleration.x).c_str());
-	ImGui::LabelText("Acceleration Box Y", std::to_string(square->acceleration.y).c_str());
-	ImGui::LabelText("Force Box X", std::to_string(square->getForce().x).c_str());
-	ImGui::LabelText("Force Box Y", std::to_string(square->getForce().y).c_str());
+	ImGui::LabelText("Position Box X (m)", std::to_string(square->getPosition().x).c_str());
+	ImGui::LabelText("Position Box Y (m)", std::to_string(square->getPosition().y).c_str());
+	ImGui::LabelText("Velocity Box X (m/s)", std::to_string(square->velocity.x).c_str());
+	ImGui::LabelText("Velocity Box Y (m/s)", std::to_string(square->velocity.y).c_str());
+	ImGui::LabelText("Acceleration Box X (m/s^2)", std::to_string(square->acceleration.x).c_str());
+	ImGui::LabelText("Acceleration Box Y (m/s^2)", std::to_string(square->acceleration.y).c_str());
+	ImGui::LabelText("Force Box X (N)", std::to_string(square->getForce().x).c_str());
+	ImGui::LabelText("Force Box Y (N)", std::to_string(square->getForce().y).c_str());
 	
 	//ImGui::TextUnformatted("%f", ramp->height);
 	//ramp position
 	ImGui::Separator();
 	
-	ImGui::InputInt("Ramp Position", &ramp->position,5,795);
+	ImGui::InputInt("Ramp Position (m)", &ramp->position,5,795);
 	
 	
 	//ramp width
-	ImGui::InputInt("Ramp Width", &ramp->width, 20, 500);
+	ImGui::InputInt("Ramp Width (m)", &ramp->width, 10, 500);
 	
 
 	//ramp height
-	ImGui::InputInt("Ramp Height", &ramp->height, 20, 300);
+	ImGui::InputInt("Ramp Height (m)", &ramp->height, 10, 300);
 	
 
 	int sizeSquare = 50;
